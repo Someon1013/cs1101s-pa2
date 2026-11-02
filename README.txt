@@ -12,10 +12,12 @@ CONTENTS
 
 RUN AN EXERCISE
 1. Choose a dojo problem and write your solution in its editor.
-2. Click Copy runnable program. This includes needed helpers and checks.
+2. Click Copy public program (4 cases), then Copy full program (24 cases).
+   Both buttons include needed helpers, your attempt and tests; no solution.
 3. Open https://sourceacademy.org/playground and select Python section 3.
 4. Paste the entire copied program and run it in Source Academy.
-   Successful supplied checks print a message. Review each problem's contract too.
+   A completed run reports the number of cases passed. A runtime error stops
+   at the last printed case number. Review each problem's contract too.
 
 The website itself does not execute Python. It uses the official playground for
 execution, so your friends do not need VS Code, a terminal, or a Python installation.
@@ -68,3 +70,11 @@ Respect any additional language restrictions or rules stated in your assessment.
 
 No external scripts, fonts, analytics, login or server-side submission system are used.
 External services are reached only through links you choose to open.
+
+EXPANDED TEST EDITION — 2 NOVEMBER 2026
+Each exercise has 4 public + 20 additional cases (864 cases across 36 exercises).
+One case earns one point only if every property it checks passes. See TESTING.txt.
+The additional cases are private-style practice, not securely hidden or official
+assessment tests. The static site and copied programs contain inspectable tests.
+Upload index.html, programs, README.txt and TESTING.txt to update an existing site.
+The four PDFs and their questions/solutions have not changed in this test update.

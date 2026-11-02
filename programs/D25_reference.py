@@ -1,40 +1,197 @@
+# D25 | Source Academy Python §3
 
-# Practice helpers, defined here; these are not extra built-ins.
+# Test helpers for Python §3. These are not part of your solution.
+# One case can check several properties, but earns only one point.
+pa_case_ok = [True]
+pa_details = [True]
+
 def pa_check(condition, message):
     if not condition:
-        return error(message)
-    return True
+        pa_case_ok[0] = False
+        if pa_details[0]:
+            print(message)
+    return condition
 
-def pa_values(xs, expected):
-    current = xs
-    for i in range(len(expected)):
-        pa_check(not is_none(current), "Linked result ended early")
-        pa_check(head(current) == expected[i], "Unexpected linked value")
-        current = tail(current)
-    return pa_check(is_none(current), "Unexpected extra linked values")
+def pa_list(values):
+    xs = None
+    for i in range(len(values) - 1, -1, -1):
+        xs = pair(values[i], xs)
+    return xs
 
 def pa_snapshot(xs):
-    saved = [None] * length(xs)
-    for i in range(len(saved)):
+    n = 0
+    current = xs
+    while not is_none(current):
+        n = n + 1
+        current = tail(current)
+    saved = [None] * n
+    for i in range(n):
         saved[i] = [xs, head(xs), tail(xs)]
         xs = tail(xs)
     return saved
 
 def pa_unchanged(saved):
     for i in range(len(saved)):
-        node = saved[i][0]
-        pa_check(head(node) == saved[i][1], "An input head changed")
-        pa_check(tail(node) is saved[i][2], "An input tail changed")
+        pa_check(head(saved[i][0]) == saved[i][1], 'Input head changed')
+        pa_check(tail(saved[i][0]) is saved[i][2], 'Input tail changed')
+    return pa_case_ok[0]
+
+def pa_heads(saved):
+    for i in range(len(saved)):
+        pa_check(head(saved[i][0]) == saved[i][1], 'Original head changed')
+    return pa_case_ok[0]
+
+def pa_values(xs, expected):
+    for i in range(len(expected)):
+        if not pa_check(is_pair(xs), 'Missing linked node or wrong representation'):
+            return False
+        pa_check(head(xs) == expected[i], 'Unexpected linked value')
+        xs = tail(xs)
+    return pa_check(is_none(xs), 'Extra nodes or a cycle')
+
+def pa_fresh(xs, saved, n):
+    for i in range(n):
+        if not is_pair(xs):
+            return pa_check(False, 'Freshness check: missing node')
+        for j in range(len(saved)):
+            pa_check(xs is not saved[j][0], 'Output reused an input node')
+        xs = tail(xs)
     return True
 
-def pa_prefix(s, expected):
-    current = s
+def pa_order(xs, saved, indices):
+    for i in range(len(indices)):
+        if not is_pair(xs):
+            return pa_check(False, 'Identity check: missing node')
+        pa_check(xs is saved[indices[i]][0], 'Wrong node identity or unstable order')
+        pa_check(head(xs) == saved[indices[i]][1], 'Node head changed')
+        xs = tail(xs)
+    return pa_check(is_none(xs), 'Result must end at None')
+
+def pa_rows(mat):
+    return [mat, pa_copy_rows(mat)]
+
+def pa_copy_rows(mat):
+    rows = [None] * len(mat)
+    for i in range(len(mat)):
+        rows[i] = mat[i]
+    return rows
+
+def pa_matrix_unchanged(mat, expected, rows):
+    pa_check(mat == expected, 'Input matrix values changed')
+    for i in range(len(rows)):
+        pa_check(mat[i] is rows[i], 'Input row replaced')
+    return pa_case_ok[0]
+
+def pa_matrix_fresh(result, mat):
+    pa_check(result is not mat, 'Outer matrix was reused')
+    for i in range(len(result)):
+        for j in range(i):
+            pa_check(result[i] is not result[j], 'Output rows alias each other')
+        for j in range(len(mat)):
+            pa_check(result[i] is not mat[j], 'Output row aliases input')
+    return pa_case_ok[0]
+
+def pa_runs(runs, expected, saved):
+    earlier = None
     for i in range(len(expected)):
-        pa_check(not is_none(current), "Stream ended early")
-        pa_check(head(current) == expected[i], "Unexpected stream value")
-        if i + 1 < len(expected):
-            current = stream_tail(current)
-    return True
+        if not is_pair(runs) or not is_pair(head(runs)):
+            return pa_check(False, 'Expected outer node and pair(value, count) record')
+        record = head(runs)
+        pa_check(head(record) == expected[i][0], 'Wrong run value')
+        pa_check(tail(record) == expected[i][1], 'Wrong run count or record representation')
+        for j in range(len(saved)):
+            pa_check(runs is not saved[j][0] and record is not saved[j][0], 'Run output aliases input')
+        scan = earlier
+        while not is_none(scan):
+            pa_check(record is not head(scan), 'Run records share one pair')
+            scan = tail(scan)
+        earlier = pair(record, earlier)
+        runs = tail(runs)
+    return pa_check(is_none(runs), 'Extra run nodes')
+
+def pa_records(items):
+    result = None
+    for i in range(len(items) - 1, -1, -1):
+        result = pair(pair(items[i][0], items[i][1]), result)
+    return result
+
+def pa_records_unchanged(saved, expected):
+    pa_unchanged(saved)
+    for i in range(len(saved)):
+        pa_check(head(saved[i][1]) == expected[i][0], 'Input record value changed')
+        pa_check(tail(saved[i][1]) == expected[i][1], 'Input record count changed')
+    return pa_case_ok[0]
+
+def pa_stream(values):
+    def build(i):
+        if i == len(values):
+            return None
+        return pair(values[i], lambda: build(i + 1))
+    return build(0)
+
+def pa_prefix(s, expected, finite, memo):
+    for i in range(len(expected)):
+        if not is_pair(s):
+            return pa_check(False, 'Stream ended early or has wrong representation')
+        pa_check(head(s) == expected[i], 'Wrong stream value')
+        if i + 1 < len(expected) or finite:
+            first = stream_tail(s)
+            if memo:
+                pa_check(stream_tail(s) is first, 'Output tail is not memoized')
+            s = first
+    if finite:
+        pa_check(is_none(s), 'Finite stream has extra values')
+    return pa_case_ok[0]
+
+def pa_counted_stream(values, counter):
+    def build(i):
+        if i == len(values):
+            return None
+        def later():
+            counter[0] = counter[0] + 1
+            return build(i + 1)
+        return pair(values[i], later)
+    return build(0)
+
+def pa_integers(start, step):
+    return pair(start, lambda: pa_integers(start + step, step))
+
+def pa_tree(spec):
+    if is_none(spec) or not is_list(spec):
+        return spec
+    result = None
+    for i in range(len(spec) - 1, -1, -1):
+        result = pair(pa_tree(spec[i]), result)
+    return result
+
+def pa_tree_values(tree, spec):
+    if is_list(spec):
+        for i in range(len(spec)):
+            if not is_pair(tree):
+                return pa_check(False, 'Wrong tree shape')
+            pa_tree_values(head(tree), spec[i])
+            tree = tail(tree)
+        return pa_check(is_none(tree), 'Extra tree nodes')
+    return pa_check(tree == spec, 'Wrong leaf or empty subtree')
+
+def pa_tree_nodes(tree):
+    if not is_pair(tree):
+        return None
+    def join(xs, ys):
+        if is_none(xs):
+            return ys
+        return pair(head(xs), join(tail(xs), ys))
+    return pair(tree, join(pa_tree_nodes(head(tree)), pa_tree_nodes(tail(tree))))
+
+def pa_tree_fresh(result, original_nodes):
+    if is_pair(result):
+        current = original_nodes
+        while not is_none(current):
+            pa_check(result is not head(current), 'Tree reused an input pair')
+            current = tail(current)
+        pa_tree_fresh(head(result), original_nodes)
+        pa_tree_fresh(tail(result), original_nodes)
+    return pa_case_ok[0]
 
 def strided_chars(text, start, step):
 
@@ -44,9 +201,151 @@ def strided_chars(text, start, step):
         return pair(text[i], lambda: build(i + step))
     return build(start)
 
-s = strided_chars('abcdefg', 1, 2)
-pa_prefix(s, ['b', 'd', 'f'])
-pa_check(is_none(stream_tail(stream_tail(stream_tail(s)))), "Finite end")
-pa_check(is_none(strided_chars('', 0, 1)), "Empty text")
-pa_check(is_none(strided_chars('abc', 4, 1)), "Start past end")
-print("D25: all supplied checks passed")
+def pa_case_01():
+    s = strided_chars('', 0, 1)
+    pa_prefix(s, [], True, False)
+    return pa_case_ok[0]
+
+def pa_case_02():
+    s = strided_chars('a', 0, 1)
+    pa_prefix(s, ['a'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_03():
+    s = strided_chars('abcdefg', 1, 2)
+    pa_prefix(s, ['b', 'd', 'f'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_04():
+    s = strided_chars('abc', 3, 1)
+    pa_prefix(s, [], True, False)
+    return pa_case_ok[0]
+
+def pa_case_05():
+    s = strided_chars('abc', 8, 2)
+    pa_prefix(s, [], True, False)
+    return pa_case_ok[0]
+
+def pa_case_06():
+    s = strided_chars('abc', 2, 1)
+    pa_prefix(s, ['c'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_07():
+    s = strided_chars('abcd', 0, 1)
+    pa_prefix(s, ['a', 'b', 'c', 'd'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_08():
+    s = strided_chars('abcdef', 0, 2)
+    pa_prefix(s, ['a', 'c', 'e'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_09():
+    s = strided_chars('abcdef', 1, 2)
+    pa_prefix(s, ['b', 'd', 'f'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_10():
+    s = strided_chars('aaaaa', 0, 1)
+    pa_prefix(s, ['a', 'a', 'a', 'a', 'a'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_11():
+    s = strided_chars('a b c', 0, 2)
+    pa_prefix(s, ['a', 'b', 'c'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_12():
+    s = strided_chars('09-0', 0, 3)
+    pa_prefix(s, ['0', '0'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_13():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 0, 4)
+    pa_prefix(s, ['a', 'e', 'i', 'm', 'q', 'u', 'y'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_14():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 1, 5)
+    pa_prefix(s, ['b', 'g', 'l', 'q', 'v'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_15():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 25, 9)
+    pa_prefix(s, ['z'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_16():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 20, 2)
+    pa_prefix(s, ['u', 'w', 'y'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_17():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 0, 30)
+    pa_prefix(s, ['a'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_18():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 9, 1)
+    pa_prefix(s, ['j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_19():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 12, 3)
+    pa_prefix(s, ['m', 'p', 's', 'v', 'y'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_20():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 2, 7)
+    pa_prefix(s, ['c', 'j', 'q', 'x'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_21():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 0, 13)
+    pa_prefix(s, ['a', 'n'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_22():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 13, 13)
+    pa_prefix(s, ['n'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_23():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 24, 2)
+    pa_prefix(s, ['y'], True, False)
+    return pa_case_ok[0]
+
+def pa_case_24():
+    s = strided_chars('abcdefghijklmnopqrstuvwxyz', 26, 1)
+    pa_prefix(s, [], True, False)
+    return pa_case_ok[0]
+
+pa_cases = [pa_case_01, pa_case_02, pa_case_03, pa_case_04, pa_case_05, pa_case_06, pa_case_07, pa_case_08, pa_case_09, pa_case_10, pa_case_11, pa_case_12, pa_case_13, pa_case_14, pa_case_15, pa_case_16, pa_case_17, pa_case_18, pa_case_19, pa_case_20, pa_case_21, pa_case_22, pa_case_23, pa_case_24]
+pa_titles = ['start=0, step=1, length=0', 'start=0, step=1, length=1', 'start=1, step=2, length=7', 'start=3, step=1, length=3', 'start=8, step=2, length=3', 'start=2, step=1, length=3', 'start=0, step=1, length=4', 'start=0, step=2, length=6', 'start=1, step=2, length=6', 'start=0, step=1, length=5', 'start=0, step=2, length=5', 'start=0, step=3, length=4', 'start=0, step=4, length=26', 'start=1, step=5, length=26', 'start=25, step=9, length=26', 'start=20, step=2, length=26', 'start=0, step=30, length=26', 'start=9, step=1, length=26', 'start=12, step=3, length=26', 'start=2, step=7, length=26', 'start=0, step=13, length=26', 'start=13, step=13, length=26', 'start=24, step=2, length=26', 'start=26, step=1, length=26']
+# Set True to show each case's title and failed-property messages.
+# Private-style mode defaults to case IDs only; the test source remains inspectable.
+pa_reveal_details = False
+pa_passed = 0
+pa_public_passed = 0
+pa_extra_passed = 0
+for pa_i in range(len(pa_cases)):
+    pa_case_ok[0] = True
+    pa_details[0] = pa_reveal_details or pa_i < 4
+    print("Running case", pa_i + 1)
+    if pa_details[0]:
+        print(pa_titles[pa_i])
+    pa_returned = pa_cases[pa_i]()
+    if pa_case_ok[0] and pa_returned:
+        pa_passed = pa_passed + 1
+        if pa_i < 4:
+            pa_public_passed = pa_public_passed + 1
+        else:
+            pa_extra_passed = pa_extra_passed + 1
+        print("PASS")
+    else:
+        print("FAIL")
+print("D25 passed", pa_passed, "out of", len(pa_cases), "cases")
+print("Public cases passed", pa_public_passed, "out of", min(4, len(pa_cases)))
+if len(pa_cases) > 4:
+    print("Additional cases passed", pa_extra_passed, "out of", len(pa_cases) - 4)

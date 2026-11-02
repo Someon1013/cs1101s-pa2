@@ -1,0 +1,85 @@
+PA2 PRACTICE ROOM — EXPANDED TEST EDITION
+Source Academy Python §3 | 2 November 2026
+
+WHAT CHANGED
+Every exercise D01–D36 now has 24 independent cases:
+  4 public cases, available before an attempt;
+  20 additional cases, hidden from the normal page view.
+Total: 864 cases (144 public + 720 additional).
+
+The previous few checks were smoke tests, not broad assessment preparation.
+These cases are original practice material. Their counts and scores do not
+reproduce or predict the official PA marks or official private tests.
+
+WORKFLOW — NO INSTALLATION
+1. Write your function in the website editor.
+2. Copy public program, paste into Source Academy Python §3, and run.
+3. Reason through further boundaries yourself; fix the general algorithm.
+4. Copy full program to try all 24 cases without revealing their descriptions.
+5. After attempting, enable detailed failures or reveal the additional case
+   with the number printed in Source Academy. Hints and solutions remain separate.
+
+SCORING
+One case = one point, even if it makes multiple assertions. A case passes only
+if all its checks pass. The full run reports public, additional and total cases.
+Ordinary failed assertions allow the remaining cases to run. Runtime errors,
+nontermination or recursion/resource limits can interrupt the entire run.
+The last 'Running case' number identifies the case being attempted. An
+interrupted run has no complete score; stop an endless run in Source Academy.
+Fixtures and local variables are freshly constructed within each case.
+
+PRIVACY OF TESTS
+The additional tests are PRIVATE-STYLE, not truly secret. A static GitHub Pages
+site has no secure grading server. The tests exist in the page and copied
+program, and you can choose to inspect them. They contain expected results,
+not the reference implementation. The site does not run Python itself.
+
+COVERAGE
+D01–D04: empty/singleton inputs, duplicates, zeros, signs, odd/even lengths,
+         positional signs, prefix balance, input preservation and fresh output.
+D05–D09: directed route costs, repeated houses, position predicates, distinct
+         runs with equal values, pair(value,count) representation, expansion,
+         chunk boundaries and short final chunks.
+D10–D12: rectangular and thin matrices, independent rows, alternating snake
+         direction, operand order, unary negation and fractional division.
+D13–D18: all original node identities and heads, stable duplicate ordering,
+         exact cut endpoints, empty halves, tail termination and partition order.
+D19–D24: unreachable and zero-move goals, success/failure restoration, repeated
+         calls, key acquisition and revisits, entry costs, one-wall allowance,
+         exact-length walks and early visits to the goal.
+D25–D30: finite ends, empty/singleton sources, infinite prefixes, guarded source
+         forcing, repeated tail identity, huge lazy runs, run-boundary sharing,
+         independent smooth streams and values through position 1000.
+D31–D36: duplicate boundaries, nested empty trees, fresh recursive structure,
+         nonnumeric continuations, undo histories, independent counters, lexical
+         shadowing, asymmetric and nonzero-diagonal route costs, infinite routes.
+
+LIMITS
+Tests use valid inputs within each exercise's contract. They do not invent
+requirements for malformed inputs. Passing finite tests does not prove
+correctness, asymptotic complexity, use of the requested algorithm, or absence
+of forbidden temporary allocations. Inspect those source-level restrictions.
+For example, correct sorted values alone are insufficient for destructive sort:
+its cases also check every node in the expected stable identity order.
+
+VALIDATION
+All 864 reference cases passed supplemental offline logic checks; the 144
+public cases were also checked as a separate copied-program mode. Independent
+oracles generated expected graph, sequence and expression values. The suite
+detected 37 deliberately faulty implementations across all 36 exercises.
+Programs were statically checked against the conservative Python §3 syntax
+used in this pack. This is not a claim of official-interpreter execution.
+The official Source Academy runtime remains the place to run your attempts.
+
+FILES
+index.html: browser editor, full guide, exercises, public/full test copying.
+programs/Dxx_starter.py: starter plus four public cases.
+programs/Dxx_reference.py: solution plus all 24 cases (SPOILERS).
+downloads/: the four existing PDFs; their lessons and questions are unchanged.
+README.txt: publishing and setup notes.
+
+UPDATE AN EXISTING GITHUB PAGES SITE
+Upload the replacement index.html, programs folder, README.txt and TESTING.txt
+at the same repository paths and commit. Keep the downloads folder in place.
+You can also upload the entire extracted package to replace the existing files.
+Do not upload the ZIP itself as the website.
